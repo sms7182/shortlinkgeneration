@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"shortlinkapi/models"
+
+	_ "github.com/lib/pq"
 )
 
 type ShortLinkDB interface {
@@ -22,13 +24,12 @@ func (d *DB) Open() error {
 	if err != nil {
 		return err
 	}
-	log.Println("Connected to Database!")
-	defer pg.Close()
+
 	err = pg.Ping()
 	if err != nil {
 		return err
 	}
-
+	log.Println("Connected to Database!")
 	d.db = pg
 	return nil
 }
