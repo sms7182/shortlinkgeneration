@@ -15,7 +15,7 @@ func main() {
 	check(err)
 	defer app.DB.Close()
 	http.HandleFunc("/", app.Router.ServeHTTP)
-
+	log.Println("App running ..")
 	err = http.ListenAndServe(":9000", nil)
 	check(err)
 }

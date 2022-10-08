@@ -37,3 +37,12 @@ func (d *DB) Open() error {
 func (d *DB) Close() error {
 	return d.db.Close()
 }
+
+func (d *DB) CreateShortLink(shortLink *models.ShortUrlLink) error {
+	res, err := d.db.Exec(insertShortUrlLink, shortLink.Url, shortLink.Url, shortLink.Count)
+	if err != nil {
+		return err
+	}
+	res.LastInsertId()
+	return err
+}
