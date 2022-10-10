@@ -33,6 +33,6 @@ func (a *App) initRoutes() {
 	CaselessMatcher(a.Router)
 	a.Router.HandleFunc("/", a.IndexHandler()).Methods("GET")
 	a.Router.HandleFunc("/sendurl", a.SendUrlHanlder()).Methods("POST")
-	a.Router.HandleFunc("/{urlShortCode}", a.RedirectIfURLExist).Methods("GET")
-	a.Router.HandleFunc("/redirect", a.TestRedirect()).Methods("POST")
+	a.Router.HandleFunc("/api/{urlShortCode}", a.RedirectIfURLExist).Methods("GET")
+	a.Router.HandleFunc("/redirect", a.TestRedirect()).Methods("GET")
 }
