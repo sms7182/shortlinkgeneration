@@ -25,13 +25,13 @@ func (a *App) RedirectIfURLExist(response http.ResponseWriter, request *http.Req
 	UrlShortCode = mux.Vars(request)["urlShortCode"]
 
 	if UrlShortCode == "" {
-		errorResponse(response, "url not found", http.StatusBadGateway)
+		errorResponse(response, "url not found", "error", http.StatusBadGateway)
 		return
 	} else {
 		actualUrl, err := a.DB.GetActualUrl(UrlShortCode)
 
 		if actualUrl == "" || err != nil {
-			errorResponse(response, "actualurl not found and has error", http.StatusBadGateway)
+			errorResponse(response, "actualurl not found and has error", "error", http.StatusBadGateway)
 			return
 		} else {
 			fmt.Print(" url is " + actualUrl)
@@ -50,7 +50,7 @@ func (a *App) SendUrlHanlder() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
-			errorResponse(w, "Content Type is not application/json", http.StatusUnsupportedMediaType)
+			errorResponse(w, "Content Type is not application/json", "error", http.StatusUnsupportedMediaType)
 			return
 		}
 		var urlinstance models.UrlInstance
@@ -59,16 +59,16 @@ func (a *App) SendUrlHanlder() http.HandlerFunc {
 		err := parse(w, r, &urlinstance)
 		if err != nil {
 			if errors.As(err, &unmarshalErr) {
-				errorResponse(w, "Bad Request. Wrong Type provided for field"+unmarshalErr.Field, http.StatusBadRequest)
+				errorResponse(w, "Bad Request. Wrong Type provided for field"+unmarshalErr.Field, "error", http.StatusBadRequest)
 			} else {
-				errorResponse(w, "Bad Request"+err.Error(), http.StatusBadRequest)
+				errorResponse(w, "Bad Request"+err.Error(), "error", http.StatusBadRequest)
 			}
 			return
 		}
 
 		lastcounter, err := a.DB.GetLastCounter()
 		if err != nil {
-			errorResponse(w, "GetLastCounter has error"+err.Error(), http.StatusExpectationFailed)
+			errorResponse(w, "GetLastCounter has error"+err.Error(), "error", http.StatusExpectationFailed)
 			return
 		}
 		if lastcounter == 0 {
@@ -84,15 +84,18 @@ func (a *App) SendUrlHanlder() http.HandlerFunc {
 		}
 		err = a.DB.CreateShortLink(shortLink)
 		if err != nil {
-			errorResponse(w, "Insert in DB has error "+err.Error(), http.StatusExpectationFailed)
+			errorResponse(w, "Insert in DB has error "+err.Error(), "error", http.StatusExpectationFailed)
 			return
 		}
-		errorResponse(w, "Success", http.StatusOK)
+		body, _ := json.Marshal(shortLink)
+		errorResponse(w, "Success", string(body), http.StatusOK)
 
 	}
 
 }
-
+func LongToShort(url string, counter int64) string {
+	return longToShort(url, counter)
+}
 func longToShort(url string, counter int64) string {
 
 	var str string
@@ -110,11 +113,22 @@ func longToShort(url string, counter int64) string {
 func parse(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	return json.NewDecoder(r.Body).Decode(data)
 }
-func errorResponse(w http.ResponseWriter, message string, httpStatusCode int) {
+func errorResponse(w http.ResponseWriter, message string, responseBody string, httpStatusCode int) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(httpStatusCode)
-	resp := make(map[string]string)
-	resp["message"] = message
-	jsonResp, _ := json.Marshal(resp)
+	data := map[string]interface{}{
+		"message": message,
+		"body":    responseBody,
+	}
+	//resp := make(data)
+
+	//resp["message"] = message
+	//resp["body"] = "responseBody"
+	jsonResp, _ := json.Marshal(data)
 	w.Write(jsonResp)
+}
+
+type messageResponse struct {
+	message string
+	body    string
 }
