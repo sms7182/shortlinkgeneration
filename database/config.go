@@ -5,7 +5,7 @@ import "fmt"
 var (
 	dbUsername = "postgres"
 	dbPassword = "postgres"
-	dbHost     = "shortlinkdb"
+	dbHost     = "localhost"
 	dbDB       = "postgres"
 	dbPort     = "5432"
 	pgConnStr  = fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable",

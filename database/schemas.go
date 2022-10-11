@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS shorturllinks
 	id SERIAL PRIMARY KEY,
 	url TEXT,
 	shortlink TEXT,
-	count INTEGER
+	count BIGINT
 )
 `
 
